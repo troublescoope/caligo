@@ -33,7 +33,7 @@ class Main(module.Module):
     async def on_load(self) -> None:
         self.db = self.bot.db[self.name.upper()]
         self.cache = {}
-        self.repo = self.bot.config["updater"]["git_url"]
+        self.repo = self.bot.config["bot"]["git_url"]
 
     async def on_stop(self) -> None:
         file = AsyncPath("caligo/caligo_helper.session")
