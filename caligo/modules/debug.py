@@ -146,6 +146,8 @@ class Debug(module.Module):
                 "command": command,
                 "module": module,
                 "util": util,
+                # Functions context run in code
+                "var": var_dict,
             }
             eval_vars = OrderedDict(sorted(eval_vars.items()))
             eval_vars.update(var_dict)
