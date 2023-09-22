@@ -7,12 +7,14 @@ import traceback
 from html import escape
 from typing import Any, ClassVar, Optional, Tuple
 
-import pyrogram
+import pyrogram, contextlib
 from meval import meval
 from pyrogram.enums import ParseMode
+from collections import OrderedDict
 
 from caligo import command, module, util
 
+var_dict = {}
 
 class Debug(module.Module):
     name: ClassVar[str] = "Debug"
@@ -144,10 +146,15 @@ class Debug(module.Module):
                 "command": command,
                 "module": module,
                 "util": util,
+                # Functions context run in code
+                "var": var_dict,
             }
+            eval_vars = OrderedDict(sorted(eval_vars.items()))
+            eval_vars.update(var_dict)
 
             try:
-                return "", await meval(code, globals(), **eval_vars)
+                with contextlib.redirect_stdout(out_buf):
+                    return "", await meval(code, globals(), **eval_vars)
             except Exception as e:  # skipcq: PYL-W0703
                 # Find first traceback frame involving the snippet
                 first_snip_idx = -1
@@ -185,8 +192,10 @@ class Debug(module.Module):
             out = out[:-1]
 
         respond_text = f"""{prefix}<b>Input</b>:
+
 <pre language="python">{escape(code)}</pre>
 <b>Output</b>:
+
 <pre language="python">{escape(out)}</pre>
 
 Time: {el_str}"""
