@@ -104,8 +104,8 @@ class Network(module.Module):
         await ctx.msg.delete()
 
     @command.desc("Download file from telegram server")
-    @command.alias("dl [reply message nor ny telegram link")
-    @command.usage("[message media to download]")
+    @command.alias("dl")
+    @command.usage("download reply or send link with [message media to download]")
     async def cmd_download(self, ctx: command.Context) -> str:
         reply_msg = ctx.msg.reply_to_message
         if reply_msg and not reply_msg.media:
