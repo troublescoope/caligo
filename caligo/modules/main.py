@@ -186,6 +186,7 @@ class Main(module.Module):
     async def cmd_help(self, ctx: command.Context):
         """List the commands"""
         filt = ctx.input
+        modules: MutableMapping[str, MutableMapping[str, str]] = defaultdict(dict)
 
         if self.bot.helper_initialized and not filt:
             response: Any
