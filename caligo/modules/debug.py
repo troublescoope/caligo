@@ -14,10 +14,10 @@ from collections import OrderedDict
 
 from caligo import command, module, util
 
+var_dict = {}
 
 class Debug(module.Module):
     name: ClassVar[str] = "Debug"
-    var_dict = {}
 
     @command.desc("Get the code of a command")
     @command.usage("[command name]")
@@ -151,7 +151,7 @@ class Debug(module.Module):
             eval_vars.update(var_dict)
 
             try:
-                with contextlib.redirect_outout(out_buf):
+                with contextlib.redirect_stdout(out_buf):
                     return "", await meval(code, globals(), **eval_vars)
             except Exception as e:  # skipcq: PYL-W0703
                 # Find first traceback frame involving the snippet
