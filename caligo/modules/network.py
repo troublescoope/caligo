@@ -139,7 +139,12 @@ class Network(module.Module):
             try:
                 name = media.file_name
             except AttributeError:
-                name = f"{msg.media.value}_{(media.date or datetime.now()).strftime('%Y-%m-%d_%H-%M-%S')}"
+                if hasattr(media, "date"):
+                    name = (
+                        f"{msg.media.value}_{media.date.strftime('%Y-%m-%d_%H-%M-%S')}"
+                    )
+                else:
+                    name = f"{msg.media.value}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
             task = self.bot.loop.create_task(
                 self.bot.client.download_media(
