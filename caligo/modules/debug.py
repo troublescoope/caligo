@@ -11,7 +11,6 @@ import pyrogram, contextlib
 from meval import meval
 from pyrogram.enums import ParseMode
 from collections import OrderedDict
-from aiofile import async_open
 
 from caligo import command, module, util
 
@@ -221,10 +220,10 @@ Time: {el_str}"""
         content = ctx.input or getattr(ctx.msg, "reply_to_message", False)
         if not content:
             return "__Input content first!__"
-        if content.document and not content.media:
+        if content.document and content.document.mime_type in ["text/html", "text/plain"]:
             rdl = await content.download()
-            async with async_open(rdl, "r+") as file:
-                content = await file.read()
+            with open(rdl, "r+") as file:
+                content = file.read()
             if os.path.exists(rdl):
                 os.remove(rdl)
         await ctx.respond("Pasting content file...")
