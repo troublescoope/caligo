@@ -228,8 +228,6 @@ Time: {el_str}"""
             "https://stashbin.xyz/api/document",
             json={"content": content}, headers=headers
           ) as post:
-              if post.status not in [200, 401]:
-                  return f"__Failed to reach web paste!__\nStatus: {post.status}"
               rjson = await post.json()
               if len(rjson) != 0 and "data" in rjson and rjson["data"].get("key", {}):
                   text = f"<a href='https://stashbin.xyz/{rjson['data']['key']}'> Pasting to stashbin</a>"
