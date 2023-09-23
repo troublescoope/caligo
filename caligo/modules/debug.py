@@ -214,9 +214,9 @@ Time: {el_str}"""
         )
 
     @command.desc("Pasting your text into webpaste")
-    @command.usage("[text content]", optional=True)
+    @command.usage("paste [text content]")
     @command.alias("ps", "paste")
-    async def get_paste(self, ctx: command.Context) -> Optional[str]:
+    async def cmd_pasting(self, ctx: command.Context) -> Optional[str]:
         content = ctx.input or getattr(ctx.msg.reply_to_message, "text", False)
         if not content:
             return "__Input content first!__"
@@ -229,4 +229,4 @@ Time: {el_str}"""
               rjson = await post.json()
               if len(rjson) != 0 and "data" in rjson and rjson["data"].get("key", {}):
                   text = f"<a href='https://stashbin.xyz/{rjson['data']['key']}'> Pasting to stashbin</a>"
-                  await ctx.respon(text, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
+                  await ctx.respond(text, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
