@@ -5,6 +5,7 @@ from typing import (
     Any,
     Callable,
     Coroutine,
+    Dict,
     Iterable,
     Optional,
     Sequence,
@@ -136,6 +137,7 @@ class Context:
         self.segments = message.command
         self.cmd_len = cmd_len
         self.invoker = self.segments[0]
+        self.flags = self._parse_flags()
 
         self.last_update_time = None
 
@@ -156,6 +158,32 @@ class Context:
     def _get_args(self) -> Sequence[str]:
         self.args = self.segments[1:]
         return self.args
+
+    def _parse_flags(self) -> Dict[str, Any]:
+        """
+        Parses flags from input and returns a dictionary with flags and their values.
+        """
+        flags = {}
+        segments = self._get_args()
+        current_flag = None
+        flag_value = None
+
+        for segment in segments:
+            if segment.startswith("-"):
+                if current_flag is not None:
+                    flags[current_flag] = flag_value
+                current_flag = segment.lstrip("-")
+                flag_value = ""
+            else:
+                if flag_value is None:
+                    flag_value = segment
+                else:
+                    flag_value += " " + segment
+
+        if current_flag is not None:
+            flags[current_flag] = flag_value
+
+        return flags
 
     async def _delete(
         self, delay: Optional[float] = None, message: Optional[Message] = None
@@ -185,7 +213,6 @@ class Context:
         delete_after: Optional[Union[int, float]] = None,
         **kwargs: Any,
     ) -> Message:
-
         self.response = await self.bot.respond(
             msg or self.msg,
             text,
