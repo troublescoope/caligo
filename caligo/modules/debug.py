@@ -212,3 +212,21 @@ Time: {el_str}"""
             respond_text,
             parse_mode=pyrogram.enums.parse_mode.ParseMode.HTML,
         )
+
+    @command.desc("Pasting your text into webpaste")
+    @command.usage("[text content]", optional=True)
+    @command.alias("ps", "paste")
+    async def get_paste(self, ctx: command.Context) -> Optional[str]:
+        content = ctx.input or getattr(ctx.msg.reply_to_message, "text", False)
+        if not content:
+            return "__Input content first!__"
+        async with self.bot.http.post(
+            "https://stashbin.xyz/api/document",
+            json={"content": content}
+          ) as post:
+              if post.status not in [200, 401]:
+                  return f"__Failed to reach web paste!__\nStatus: {post.status}"
+              rjson = await post.json()
+              if len(rjson) != 0 and "data" in rjson and rjson["data"].get("key", {}):
+                  text = f"<a href='https://stashbin.xyz/{rjson['data']['key']}'> Pasting to stashbin</a>"
+                  await ctx.respon(text, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
