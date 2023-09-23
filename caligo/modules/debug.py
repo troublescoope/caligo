@@ -222,7 +222,7 @@ Time: {el_str}"""
         if not content:
             return "__Input content first!__"
         if content.document and not content.media:
-            rdl = await self.bot.client.download_media(content.document.file_id)
+            rdl = await content.download()
             async with async_open(rdl, "r+") as file:
                 content = await file.read()
             if os.path.exists(rdl):
