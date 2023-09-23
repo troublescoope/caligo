@@ -11,6 +11,7 @@ import pyrogram, contextlib
 from meval import meval
 from pyrogram.enums import ParseMode
 from collections import OrderedDict
+from aiofile import async_open
 
 from caligo import command, module, util
 
@@ -217,9 +218,16 @@ Time: {el_str}"""
     @command.usage("paste [text content]")
     @command.alias("ps", "paste")
     async def cmd_pasting(self, ctx: command.Context) -> Optional[str]:
-        content = ctx.input or getattr(ctx.msg.reply_to_message, "text", False)
+        content = ctx.input or getattr(ctx.msg, "reply_to_message", False)
         if not content:
             return "__Input content first!__"
+        if content.document and not content.media:
+            rdl = await self.bot.client.download_media(content.document.file_id)
+            async with async_open(rdl, "r+") as file:
+                content = await file.read()
+            if os.path.exists(rdl):
+                os.remove(rdl)
+        await ctx.respond("Pasting content file...")
         headers = {
             "Accept-Language": "id-ID", 
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edge/107.0.1418.42"
@@ -230,5 +238,5 @@ Time: {el_str}"""
           ) as post:
               rjson = await post.json()
               if len(rjson) != 0 and "data" in rjson and rjson["data"].get("key", {}):
-                  text = f"<a href='https://stashbin.xyz/{rjson['data']['key']}'> Pasting to stashbin</a>"
+                  text = f"<a href='https://stashbin.xyz/{rjson['data']['key']}'> Pasted to stashbin</a>"
                   await ctx.respond(text, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
