@@ -220,9 +220,13 @@ Time: {el_str}"""
         content = ctx.input or getattr(ctx.msg.reply_to_message, "text", False)
         if not content:
             return "__Input content first!__"
+        headers = {
+            "Accept-Language": "id-ID", 
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edge/107.0.1418.42"
+        }
         async with self.bot.http.post(
             "https://stashbin.xyz/api/document",
-            json={"content": content}
+            json={"content": content}, headers=headers
           ) as post:
               if post.status not in [200, 401]:
                   return f"__Failed to reach web paste!__\nStatus: {post.status}"
