@@ -217,16 +217,26 @@ Time: {el_str}"""
     @command.usage("paste [text content]")
     @command.alias("ps", "paste")
     async def cmd_pasting(self, ctx: command.Context) -> Optional[str]:
-        content = ctx.input or getattr(ctx.msg, "reply_to_message", False)
+        await ctx.respond("Pasting content file...")
+        is_doc = False
+        if ctx.input:
+            content = ctx.input
+        elif ctx.msg.reply_to_message:
+            if ctx.msg.reply_to_message.document:
+                is_doc = True
+                content = ctx.msg.reply_to_message
+            else:
+                content = ctx.msg.reply_to_message.text
+        else:
+            content = None
         if not content:
             return "__Input content first!__"
-        if content.document and content.document.mime_type in ["text/html", "text/plain"]:
+        if is_doc:
             rdl = await content.download()
             with open(rdl, "r+") as file:
                 content = file.read()
             if os.path.exists(rdl):
                 os.remove(rdl)
-        await ctx.respond("Pasting content file...")
         headers = {
             "Accept-Language": "id-ID", 
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edge/107.0.1418.42"
