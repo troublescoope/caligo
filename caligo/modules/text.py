@@ -4,6 +4,7 @@ import random
 import unicodedata
 from typing import ClassVar, Optional
 
+from aiopath import AsyncPath
 from pyrogram.enums import ParseMode
 
 from caligo import command, module
@@ -114,19 +115,24 @@ class Text(module.Module):
     async def cmd_pasting(self, ctx: command.Context) -> Optional[str]:
         await ctx.respond("Pasting content...")
 
-        content = None
-
-        if ctx.input:
-            content = ctx.input
-        elif ctx.msg.reply_to_message:
-            if ctx.msg.reply_to_message.document:
-                is_doc = True
-                content = await ctx.msg.reply_to_message.download()
-            else:
-                content = ctx.msg.reply_to_message.text
-
-        if not content:
+        if not ctx.input and not ctx.reply_msg:
             return "__Input content first!__"
+
+        if ctx.reply_msg:
+            if (
+                ctx.reply_msg.document
+                and "text/plain" in ctx.reply_msg.document.mime_type
+            ):
+                document = AsyncPath(await ctx.reply_msg.download())
+                async with document.open(mode="r") as file:
+                    content = await file.read()
+
+                await document.unlink()
+            else:
+                content = ctx.reply_msg.text or ctx.reply_msg.caption
+
+        else:
+            content = ctx.input
 
         headers = {
             "Accept-Language": "id-ID",
@@ -147,7 +153,3 @@ class Text(module.Module):
                 await ctx.respond(
                     text, disable_web_page_preview=True, parse_mode=ParseMode.HTML
                 )
-
-        # Hapus file setelah digunakan
-        if is_doc and os.path.exists(content):
-            os.remove(content)

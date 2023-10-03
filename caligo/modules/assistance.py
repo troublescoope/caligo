@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from typing import ClassVar
 
 from pyrogram import filters, types
 from pyrogram.errors.exceptions import MessageDeleteForbidden, MessageIdInvalid
