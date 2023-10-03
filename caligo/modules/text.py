@@ -2,7 +2,9 @@ import base64
 import binascii
 import random
 import unicodedata
-from typing import ClassVar
+from typing import ClassVar, Optional
+
+from pyrogram.enums import ParseMode
 
 from caligo import command, module
 
@@ -105,3 +107,47 @@ class Text(module.Module):
             return base64.b64decode(text).decode("utf-8", "replace")
         except binascii.Error as e:
             return f"⚠️ Invalid Base64 data: {e}"
+
+    @command.desc("Paste your text into webpaste")
+    @command.usage("paste [text content]")
+    @command.alias("ps", "paste")
+    async def cmd_pasting(self, ctx: command.Context) -> Optional[str]:
+        await ctx.respond("Pasting content...")
+
+        content = None
+
+        if ctx.input:
+            content = ctx.input
+        elif ctx.msg.reply_to_message:
+            if ctx.msg.reply_to_message.document:
+                is_doc = True
+                content = await ctx.msg.reply_to_message.download()
+            else:
+                content = ctx.msg.reply_to_message.text
+
+        if not content:
+            return "__Input content first!__"
+
+        headers = {
+            "Accept-Language": "id-ID",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edge/107.0.1418.42",
+        }
+
+        async with self.bot.http.post(
+            "https://stashbin.xyz/api/document",
+            json={"content": content},
+            headers=headers,
+        ) as post:
+            rjson = await post.json()
+
+            if "data" in rjson and "key" in rjson["data"]:
+                key = rjson["data"]["key"]
+                link = f"https://stashbin.xyz/{key}"
+                text = f"<a href='{link}'> Pasted to stashbin</a>"
+                await ctx.respond(
+                    text, disable_web_page_preview=True, parse_mode=ParseMode.HTML
+                )
+
+        # Hapus file setelah digunakan
+        if is_doc and os.path.exists(content):
+            os.remove(content)
