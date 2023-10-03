@@ -39,7 +39,6 @@ class Conversation:
     async def new(
         cls, bot: "Caligo", input_chat: Union[str, int], timeout: int, max_messages: int
     ) -> "Conversation":
-
         self = cls(bot, input_chat, timeout, max_messages)
         self._chat = await self.client.get_chat(self._input_chat)
 

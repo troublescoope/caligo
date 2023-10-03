@@ -22,26 +22,30 @@ def get_venv_path() -> Optional[str]:
     return None
 
 
-async def _spawn_exec(cmdline: Sequence[ProcessData], in_data: Optional[bytes],
-                      stdout: ProcessStream, stderr: ProcessStream,
-                      **kwargs: Any) -> asyncio.subprocess.Process:
+async def _spawn_exec(
+    cmdline: Sequence[ProcessData],
+    in_data: Optional[bytes],
+    stdout: ProcessStream,
+    stderr: ProcessStream,
+    **kwargs: Any
+) -> asyncio.subprocess.Process:
     stdin = asyncio.subprocess.PIPE if in_data else None
-    return await asyncio.create_subprocess_exec(*cmdline,
-                                                stdin=stdin,
-                                                stdout=stdout,
-                                                stderr=stderr,
-                                                **kwargs)
+    return await asyncio.create_subprocess_exec(
+        *cmdline, stdin=stdin, stdout=stdout, stderr=stderr, **kwargs
+    )
 
 
-async def _spawn_shell(cmdline: ProcessData, in_data: Optional[bytes],
-                       stdout: ProcessStream, stderr: ProcessStream,
-                       **kwargs: Any) -> asyncio.subprocess.Process:
+async def _spawn_shell(
+    cmdline: ProcessData,
+    in_data: Optional[bytes],
+    stdout: ProcessStream,
+    stderr: ProcessStream,
+    **kwargs: Any
+) -> asyncio.subprocess.Process:
     stdin = asyncio.subprocess.PIPE if in_data else None
-    return await asyncio.create_subprocess_shell(cmdline,
-                                                 stdin=stdin,
-                                                 stdout=stdout,
-                                                 stderr=stderr,
-                                                 **kwargs)
+    return await asyncio.create_subprocess_shell(
+        cmdline, stdin=stdin, stdout=stdout, stderr=stderr, **kwargs
+    )
 
 
 async def _get_proc_output(
@@ -53,8 +57,7 @@ async def _get_proc_output(
     stdout: Any
     stderr: Any
     try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(in_data),
-                                                timeout)
+        stdout, stderr = await asyncio.wait_for(proc.communicate(in_data), timeout)
     except asyncio.TimeoutError:
         try:
             proc.kill()
@@ -73,14 +76,16 @@ async def _get_proc_output(
     return stdout, stderr, proc.returncode
 
 
-async def run_command(*cmdline: ProcessData,
-                      in_data: Optional[bytes] = None,
-                      stdout: ProcessStream = asyncio.subprocess.PIPE,
-                      stderr: ProcessStream = asyncio.subprocess.STDOUT,
-                      timeout: Optional[int] = None,
-                      shell: bool = False,
-                      text: Union[bool, FormatType] = True,
-                      **kwargs: Any) -> Tuple[Any, Any, Optional[int]]:
+async def run_command(
+    *cmdline: ProcessData,
+    in_data: Optional[bytes] = None,
+    stdout: ProcessStream = asyncio.subprocess.PIPE,
+    stderr: ProcessStream = asyncio.subprocess.STDOUT,
+    timeout: Optional[int] = None,
+    shell: bool = False,
+    text: Union[bool, FormatType] = True,
+    **kwargs: Any
+) -> Tuple[Any, Any, Optional[int]]:
     """Runs the given command (with optional input) using asyncio.subprocess."""
 
     if shell:

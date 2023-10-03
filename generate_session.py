@@ -1,7 +1,9 @@
 import asyncio
 import os
+
 import tomli
 from pyrogram.client import Client
+
 from caligo.core import database
 
 
@@ -16,12 +18,14 @@ def load_config(filename: str) -> dict:
         config = {}
     return config
 
+
 # Define a function to get a value from the configuration or return None
 def get_config_value(config: dict, section: str, key: str) -> str:
     # Try to get the value from the configuration dictionary
     value = config.get(section, {}).get(key)
     # Return the value or None if not found or empty
     return value or None
+
 
 async def create_session() -> None:
     # Load the configuration from config.toml
@@ -47,25 +51,26 @@ async def create_session() -> None:
         name="caligo",
         workdir="caligo",
     )
-    
+
     # Create a MongoDB client with the given URI and connect lazily
     db_client = database.AsyncClient(mongodb_uri, connect=False)
-    
+
     # Get the CALIGO database from the MongoDB client
     db = db_client.get_database("CALIGO")
-    
+
     # Set the persistent storage for the Pyrogram client using the database
     client.storage = database.storage.PersistentStorage(db)  # type: ignore
 
     print("Generating session...")
-    
+
     # Start and stop the Pyrogram client to generate a session file
     await client.start()
     print("Session generated successfully!")
     await client.stop()
-    
+
     # Close the MongoDB client connection
     await db_client.close()
+
 
 if __name__ == "__main__":
     asyncio.run(create_session())

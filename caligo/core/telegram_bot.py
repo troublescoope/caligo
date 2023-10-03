@@ -149,7 +149,6 @@ class TelegramBot(CaligoBase):
                 self.loop.remove_signal_handler(signame)
 
         def signal_handler(signum: int):
-
             print(flush=True)
             self.log.info("Stop signal received ('%s').", signals[signum])
             clear_handler()
@@ -298,7 +297,6 @@ class TelegramBot(CaligoBase):
         **kwargs: Any,
     ) -> Message:
         if text:
-
             if redact:
                 text = self.redact_message(text)
 

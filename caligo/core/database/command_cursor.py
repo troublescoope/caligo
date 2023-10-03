@@ -29,7 +29,6 @@ if TYPE_CHECKING:
 
 
 class CommandCursor(_CommandCursor, Generic[_DocumentType]):
-
     _CommandCursor__data: Deque[Any]
     _CommandCursor__killed: bool
 

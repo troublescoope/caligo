@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 
 class Cursor(_Cursor, Generic[_DocumentType]):
-
     _Cursor__data: Deque[Any]
     _Cursor__killed: bool
     _Cursor__query_flags: int

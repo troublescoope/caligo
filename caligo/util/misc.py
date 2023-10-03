@@ -1,15 +1,14 @@
 from typing import Any, Callable, Sequence, Tuple, Union
 
 
-def find_prefixed_funcs(obj: Any,
-                        prefix: str) -> Sequence[Tuple[str, Callable]]:
+def find_prefixed_funcs(obj: Any, prefix: str) -> Sequence[Tuple[str, Callable]]:
     """Finds functions with symbol names matching the prefix on the given object."""
 
     results = []
 
     for sym in dir(obj):
         if sym.startswith(prefix):
-            name = sym[len(prefix):]
+            name = sym[len(prefix) :]
             func = getattr(obj, sym)
             if not callable(func):
                 continue
@@ -19,10 +18,9 @@ def find_prefixed_funcs(obj: Any,
     return results
 
 
-def human_readable_bytes(value: Union[int, float],
-                         digits: int = 2,
-                         delim: str = "",
-                         postfix: str = "") -> str:
+def human_readable_bytes(
+    value: Union[int, float], digits: int = 2, delim: str = "", postfix: str = ""
+) -> str:
     chosen_unit = "B"
     for unit in ("KiB", "MiB", "GiB", "TiB"):
         if value > 1000:
