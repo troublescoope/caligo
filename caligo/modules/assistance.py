@@ -70,17 +70,17 @@ class Assistance(module.Module):
         # Exit AFK mode when sending an outgoing message
         if msg.outgoing:
             await self._set_afk(False)
-            await msg.reply("Welcome back!")
-            return
+            response_msg = await msg.reply("Welcome back!")
 
-        reason = await self._get_reason()
-        afk_time = util.time.format_duration_td(datetime.now() - start_time)
+        else:
+            reason = await self._get_reason()
+            afk_time = util.time.format_duration_td(datetime.now() - start_time)
 
-        response = f"**I'm currently away**\n"
-        if reason:
-            response += f"**Reason:** `{reason}`\n"
-        response += f"**Since:** `{afk_time}` ago..."
+            response = f"**I'm currently away**\n"
+            if reason:
+                response += f"**Reason:** `{reason}`\n"
+            response += f"**Since:** `{afk_time}` ago..."
 
-        # Send the response message and delete it after 10 seconds using asyncio.create_task
-        response_msg = await msg.reply(response)
+            # Send the response message and delete it after 10 seconds using asyncio.create_task
+            response_msg = await msg.reply(response)
         asyncio.create_task(self.delete_message_after(response_msg, 10))
