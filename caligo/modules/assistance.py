@@ -7,14 +7,18 @@ from pyrogram.errors.exceptions import MessageDeleteForbidden, MessageIdInvalid
 
 from caligo import command, listener, module, util
 from caligo.core import database
+from caligo.util.cache_limiter import CacheLimiter
 
 
 class Assistant(module.Module):
     name: ClassVar[str] = "Assistant"
+
     db: database.AsyncCollection
+    cache: CacheLimiter
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection(self.name.lower())
+        self.cache = CacheLimiter(ttl=60, max_value=3)
 
     async def _is_afk(self) -> (bool, datetime):
         data = await self.db.find_one({"_id": 0})
@@ -72,6 +76,10 @@ class Assistant(module.Module):
             await self._set_afk(False)
             response_msg = await msg.reply("Welcome back!")
 
+        elif await self.cache.exceeded(msg.from_user.id):
+            # User has exceeded rate limit, do not send AFK message
+            return
+
         else:
             reason = await self._get_reason()
             afk_time = util.time.format_duration_td(datetime.now() - start_time)
@@ -83,4 +91,7 @@ class Assistant(module.Module):
 
             # Send the response message and delete it after 10 seconds using asyncio.create_task
             response_msg = await msg.reply(response)
+
         asyncio.create_task(self.delete_message_after(response_msg, 10))
+        # Increment user count to cache
+        await self.cache.increment(msg.from_user.id)
