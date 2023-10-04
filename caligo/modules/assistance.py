@@ -45,7 +45,7 @@ class Assistant(module.Module):
             await message.delete()
         except (MessageDeleteForbidden, MessageIdInvalid) as e:
             # Handle specific exceptions that may occur during message deletion
-            print(f"Error deleting message: {e}")
+            self.log.error(f"Error deleting message: {e}")
 
     @command.desc("Handle messages or tags when you're away")
     @command.usage("afk [reason?]")
