@@ -9,8 +9,8 @@ from caligo import command, listener, module, util
 from caligo.core import database
 
 
-class Assistance(module.Module):
-    name: ClassVar[str] = "Assistance"
+class Assistant(module.Module):
+    name: ClassVar[str] = "Assistant"
     db: database.AsyncCollection
 
     async def on_load(self) -> None:
