@@ -1,34 +1,42 @@
 import asyncio
 from datetime import datetime
-from typing import ClassVar
+from typing import ClassVar, Tuple
 
 from pyrogram import filters, types
 from pyrogram.errors.exceptions import MessageDeleteForbidden, MessageIdInvalid
 
 from caligo import command, listener, module, util
 from caligo.core import database
-from caligo.util.cache_limiter import CacheLimiter
 
 
 class Assistant(module.Module):
     name: ClassVar[str] = "Assistant"
 
     db: database.AsyncCollection
-    cache: CacheLimiter
 
     async def on_load(self) -> None:
         self.db = self.bot.db.get_collection(self.name.lower())
-        self.cache = CacheLimiter(ttl=60, max_value=3)
 
-    async def _is_afk(self) -> (bool, datetime):
+    async def _set_antipm(self, enable: bool = False, max_msg: int = 3) -> None:
+        update_data = {
+            "antipm": enable,
+            "max_msg": max_msg,
+        }
+        await self.db.update_one({"_id": 0}, {"$set": update_data}, upsert=True)
+
+    async def _get_antipm(self) -> Tuple[bool, int]:
         data = await self.db.find_one({"_id": 0})
         if data:
-            return data.get("afk", False), data.get("start_time"), data.get("strict")
-        return False, None, None
+            return data.get("antipm", False), data.get("max_msg", 3)
+        return False, 3
 
-    async def _get_reason(self) -> str:
-        reason = await self.db.find_one({"_id": 0})
-        return reason.get("reason", "")  # Return an empty string if no reason is set
+    async def _is_afk(self) -> Tuple[bool, datetime, int, str]:
+        data = await self.db.find_one({"_id": 0})
+        afk = data.get("afk", False)
+        start_time = data.get("start_time")
+        strict_msg = data.get("strict")
+        reason = data.get("reason", "")  # Get reason as well
+        return afk, start_time, strict_msg, reason
 
     async def _set_afk(self, afk: bool, reason: str = None, strict: int = 0) -> None:
         update_data = {
@@ -62,13 +70,14 @@ class Assistant(module.Module):
         ~filters.bot
         & ~filters.channel
         & ~filters.service
-        & (filters.private | filters.mentioned)
+        & (filters.private | filters.mentioned | filters.incoming)
         | filters.outgoing
     )
     async def on_message(self, msg: types.Message):
-        afk, start_time, strict_msg = await self._is_afk()
+        afk, start_time, strict_msg, reason = await self._is_afk()
+        antipm, max_msg = await self._get_antipm()
 
-        if not afk or msg.id == strict_msg:  # Return early if not AFK
+        if not afk and not antipm or msg.id == strict_msg:  # Return early if not AFK
             return
 
         # Exit AFK mode when sending an outgoing message
@@ -81,7 +90,6 @@ class Assistant(module.Module):
             return
 
         else:
-            reason = await self._get_reason()
             afk_time = util.time.format_duration_td(datetime.now() - start_time)
 
             response = f"**I'm currently away**\n"
