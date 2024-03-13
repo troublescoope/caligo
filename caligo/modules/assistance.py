@@ -20,15 +20,16 @@ class Assistant(module.Module):
         self.db = self.bot.db.get_collection(self.name.lower())
         self.cache = CacheLimiter(ttl=60, max_value=3)
 
-    async def _is_afk(self) -> (bool, datetime):
+    async def _afk_data(self) -> (bool, datetime, int, str):
         data = await self.db.find_one({"_id": 0})
         if data:
-            return data.get("afk", False), data.get("start_time"), data.get("strict")
-        return False, None, None
-
-    async def _get_reason(self) -> str:
-        reason = await self.db.find_one({"_id": 0})
-        return reason.get("reason", "")  # Return an empty string if no reason is set
+            return (
+                data.get("afk", False),
+                data.get("start_time"),
+                data.get("strict"),
+                data.get("reason", ""),
+            )
+        return False, None, None, ""
 
     async def _set_afk(self, afk: bool, reason: str = None, strict: int = 0) -> None:
         update_data = {
@@ -43,9 +44,8 @@ class Assistant(module.Module):
         try:
             await asyncio.sleep(seconds)
             await message.delete()
-        except (MessageDeleteForbidden, MessageIdInvalid) as e:
-            # Handle specific exceptions that may occur during message deletion
-            self.log.error(f"Error deleting message: {e}")
+        except Exception as e:
+            self.log.error("Error deleting message: {}".format(e))
 
     @command.desc("Handle messages or tags when you're away")
     @command.usage("afk [reason?]")
@@ -66,32 +66,16 @@ class Assistant(module.Module):
         | filters.outgoing
     )
     async def on_message(self, msg: types.Message):
-        afk, start_time, strict_msg = await self._is_afk()
+        afk, start_time, strict_msg, reason = await self._afk_data()
 
-        if not afk or msg.id == strict_msg:  # Return early if not AFK
+        if not afk or msg.id == strict_msg:
             return
 
-        # Exit AFK mode when sending an outgoing message
-        if msg.outgoing:
-            await self._set_afk(False)
-            response_msg = await msg.reply("Welcome back!")
-
-        elif await self.cache.exceeded(msg.from_user.id):
-            # User has exceeded rate limit, do not send AFK message
-            return
-
-        else:
-            reason = await self._get_reason()
+        if msg.outgoing or not await self.cache.exceeded(msg.from_user.id):
             afk_time = util.time.format_duration_td(datetime.now() - start_time)
-
-            response = f"**I'm currently away**\n"
-            if reason:
-                response += f"**Reason:** `{reason}`\n"
-            response += f"**Since:** `{afk_time}` ago..."
-
-            # Send the response message and delete it after 10 seconds using asyncio.create_task
+            response = "**I'm currently away**\n{}**Since:** `{}` ago...".format(
+                "**Reason:** `{}`\n".format(reason) if reason else "", afk_time
+            )
             response_msg = await msg.reply(response)
-
-        asyncio.create_task(self.delete_message_after(response_msg, 10))
-        # Increment user count to cache
-        await self.cache.increment(msg.from_user.id)
+            asyncio.create_task(self.delete_message_after(response_msg, 10))
+            await self.cache.increment(msg.from_user.id)
