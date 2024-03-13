@@ -1,9 +1,7 @@
-# Taken from https://github.com/animeshxd/pyromongo
-
 import asyncio
 import inspect
 import time
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 from pymongo import UpdateOne
 from pyrogram.raw.types.input_peer_channel import InputPeerChannel
@@ -144,6 +142,14 @@ class PersistentStorage(Storage):
             raise KeyError(f"Phone number not found: {phone_number}")
 
         return get_input_peer(*res.values())
+
+    async def update_username(self, user_id: int, username: str) -> None:
+        try:
+            await self._peer.update_one(
+                {"_id": user_id}, {"$set": {"username": username}}
+            )
+        except Exception as e:
+            print(f"Error updating username: {e}")
 
     async def _get(self) -> Optional[Any]:
         attr = inspect.stack()[2].function
