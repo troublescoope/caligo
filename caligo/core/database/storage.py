@@ -149,7 +149,7 @@ class PersistentStorage(Storage):
                 {"_id": user_id}, {"$set": {"username": username}}
             )
         except Exception as e:
-            print(f"Error updating username: {e}")
+            raise RuntimeError(f"Error updating username: {e}")
 
     async def _get(self) -> Optional[Any]:
         attr = inspect.stack()[2].function
