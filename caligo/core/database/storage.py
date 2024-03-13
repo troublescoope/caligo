@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import time
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from pymongo import UpdateOne
 from pyrogram.raw.types.input_peer_channel import InputPeerChannel
