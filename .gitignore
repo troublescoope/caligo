@@ -25,6 +25,8 @@ venv/
 *.log
 *.session
 *.session-journal
+*.session-shm
+*.session-wal
 
 # IDE specific files
 .idea/
