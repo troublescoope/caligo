@@ -299,7 +299,7 @@ Expected parameters: {args_desc}"""
         return f"Prefix set to `{self.bot.prefix}`"
 
     @command.desc("Get information about this bot instance")
-    @command.alias("botinfo", "binfo", "bi", "i")
+    @command.alias("botinfo", "binfo", "bi")
     async def cmd_info(self, ctx: command.Context) -> None:
         # Get tagged version and optionally the Git commit
         commit = await util.run_sync(util.version.get_commit)
