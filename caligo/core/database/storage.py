@@ -101,6 +101,20 @@ class PersistentStorage(Storage):
 
         await self._peer.bulk_write(bulk)
 
+    async def update_usernames(self, usernames: List[Tuple[int, str]]) -> None:
+        bulk = [
+            UpdateOne(
+                {"_id": user_id},
+                {"$set": {"username": username}},
+                upsert=True,
+            )
+            for user_id, username in usernames
+        ]
+        if not bulk:
+            return
+
+        await self._peer.bulk_write(bulk)
+
     async def get_peer_by_id(
         self, peer_id: int
     ) -> Union[InputPeerUser, InputPeerChat, InputPeerChannel]:
@@ -142,14 +156,6 @@ class PersistentStorage(Storage):
             raise KeyError(f"Phone number not found: {phone_number}")
 
         return get_input_peer(*res.values())
-
-    async def update_username(self, user_id: int, username: str) -> None:
-        try:
-            await self._peer.update_one(
-                {"_id": user_id}, {"$set": {"username": username}}
-            )
-        except Exception as e:
-            raise RuntimeError(f"Error updating username: {e}")
 
     async def _get(self) -> Optional[Any]:
         attr = inspect.stack()[2].function
