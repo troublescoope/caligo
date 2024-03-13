@@ -71,11 +71,16 @@ class Assistant(module.Module):
         if not afk or msg.id == strict_msg:
             return
 
-        if msg.outgoing or not await self.cache.exceeded(msg.from_user.id):
+        if msg.outgoing:
+            await self._set_afk(False)  # Set AFK to False if message is outgoing
+            await msg.reply("Welcome back!")  # Send a message to acknowledge the return
+            return
+
+        if not await self.cache.exceeded(msg.from_user.id):
             afk_time = util.time.format_duration_td(datetime.now() - start_time)
             response = "**I'm currently away**\n{}**Since:** `{}` ago...".format(
                 "**Reason:** `{}`\n".format(reason) if reason else "", afk_time
             )
-            response_msg = await msg.reply(response)
+            response_msg = await msg.reply(response, quote=True)
             asyncio.create_task(self.delete_message_after(response_msg, 10))
             await self.cache.increment(msg.from_user.id)
