@@ -136,6 +136,8 @@ class Network(module.Module):
         results = set()
         for msg in media_group:
             media = getattr(msg, msg.media.value)
+            if not media:
+                return "Media is empty!, maybe group can't display in your country?"
             try:
                 name = media.file_name
             except AttributeError:
