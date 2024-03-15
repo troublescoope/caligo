@@ -93,7 +93,7 @@ async def send_as_document(
 
 async def parse_telegram_link(link):
     # Pattern for extracting chat_id and msg_id
-    pattern = r"https?://t.me/(?:c/)?([a-zA-Z0-9_]+)/(\d+)"
+    pattern = r"(?:-\w+\s+)?https?://t.me/(?:c/)?([a-zA-Z0-9_]+)/(\d+)"
 
     # Extract chat_id and msg_id using regex
     match = re.match(pattern, link)

@@ -183,12 +183,13 @@ class Transmission(module.Module):
             chat_id = ctx.chat.id
             msg_id = reply_msg.id
 
+        bulk = True if "b" in ctx.flags else False
+
         message = (
             reply_msg
             if reply_msg
             else await self.bot.client.get_messages(chat_id, msg_id)
         )
-        bulk = True if "b" in ctx.flags else False
 
         return await self.download_media(ctx, message, "Download", bulk)
 
