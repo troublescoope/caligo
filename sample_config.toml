@@ -11,6 +11,7 @@ api_hash = "12345678" # Client API hash used for authentication
 [bot]
 # Mongodb url from https://cloud.mongodb.com/
 db_uri = "mongodb://srv+"
+db_dns = ""
 git_url = "https://github.com/troublescope/caligo.git"
 
 # ---- OPTIONAL ---- #
