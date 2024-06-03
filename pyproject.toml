@@ -58,6 +58,7 @@ tomli = {version = "^2.0.1", python = "<3.11"}
 TgCrypto = "^1.2.5"
 uvloop = {version = "^0.17.0", platform = "linux"}
 aiocache = "^0.12.2"
+python-magic = "^0.4.27"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
