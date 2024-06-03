@@ -35,6 +35,7 @@ class PersistentStorage(Storage):
         self._peer = database["PEERS"]
         self._remove_peers = remove_peers
         self._session = database["SESSION"]
+        self._states = database["update_state"]
 
     async def open(self) -> None:
         """
@@ -114,6 +115,30 @@ class PersistentStorage(Storage):
             return
 
         await self._peer.bulk_write(bulk)
+
+    async def update_state(self, value: Tuple[int, int, int, int, int] = object):
+        if value == object:
+            states = [
+                [state["_id"], state["pts"], state["qts"], state["date"], state["seq"]]
+                async for state in self._states.find()
+            ]
+            return states if len(states) > 0 else None
+        else:
+            if isinstance(value, int):
+                await self._states.delete_one({"id": value})
+            else:
+                await self._states.update_one(
+                    {"_id": value[0]},
+                    {
+                        "$set": {
+                            "pts": value[1],
+                            "qts": value[2],
+                            "date": value[3],
+                            "seq": value[4],
+                        }
+                    },
+                    upsert=True,
+                )
 
     async def get_peer_by_id(
         self, peer_id: int
