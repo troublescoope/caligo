@@ -33,9 +33,7 @@ class Debug(module.Module):
         # Strip first level of indentation
         filtered_src = re.sub(r"^ {4}", "", src, flags=re.MULTILINE)
 
-        await ctx.respond(
-            f"<pre language='python'>{filtered_src}</pre>", parse_mode=ParseMode.HTML
-        )
+        await ctx.respond(f"<pre>{filtered_src}</pre>", parse_mode=ParseMode.HTML)
 
     @command.desc("Get all contextually relevant IDs")
     @command.alias("user")
@@ -195,10 +193,10 @@ class Debug(module.Module):
 
         respond_text = f"""{prefix}<b>Input</b>:
 
-<pre language="python">{escape(code)}</pre>
+<pre>{escape(code)}</pre>
 <b>Output</b>:
 
-<pre language="python">{escape(out)}</pre>
+<pre>{escape(out)}</pre>
 
 Time: {el_str}"""
         if len(respond_text) > 4096:
